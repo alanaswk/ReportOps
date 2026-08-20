@@ -171,16 +171,6 @@ pytest
 - [ ] Day 9: Validation, metric, routing, retrieval, and grounding evaluation
 - [ ] Day 10: Documentation, screenshots, demo video, and portfolio polish
 
-## Day 1 definition of done
-
-- The repository and virtual environment are created.
-- Dependencies install successfully from `requirements.txt`.
-- The dataset schema is finalized.
-- One seeded command creates the clean demo files and five corrupted files.
-- Generated files are reproducible across runs.
-- The first validation function correctly identifies one known seeded issue.
-- The working milestone is committed to GitHub.
-
 ## Evaluation plan
 
 The finished project will publish measured results for:
@@ -196,7 +186,3 @@ Results will be added only after the evaluations have been run.
 ## Scope and limitations
 
 The MVP intentionally excludes autonomous data correction, multiple collaborating agents, forecasting, authentication, databases, a separate API backend, and elaborate cloud infrastructure. These may be considered later only if they make the deployed demo clearer, more reliable, or more useful.
-
-## License
-
-No license has been selected yet.

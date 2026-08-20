@@ -1,0 +1,57 @@
+{
+  "seed": 42,
+  "clean_file": "clean_operations_data.csv",
+  "corrupted_files": [
+    {
+      "file": "corrupted_missing_required_column.csv",
+      "rule": "required_columns",
+      "expected_issue_count": 1,
+      "expected": {
+        "missing_columns": [
+          "budget_revenue"
+        ]
+      }
+    },
+    {
+      "file": "corrupted_duplicate_record.csv",
+      "rule": "duplicate_records",
+      "expected_issue_count": 1,
+      "expected": {
+        "location_id": "LOC-001",
+        "month": "2025-01-01",
+        "duplicate_group_size": 2
+      }
+    },
+    {
+      "file": "corrupted_missing_value.csv",
+      "rule": "missing_values",
+      "expected_issue_count": 1,
+      "expected": {
+        "location_id": "LOC-003",
+        "month": "2025-03-01",
+        "column": "revenue"
+      }
+    },
+    {
+      "file": "corrupted_impossible_value.csv",
+      "rule": "impossible_values",
+      "expected_issue_count": 1,
+      "expected": {
+        "location_id": "LOC-004",
+        "month": "2025-04-01",
+        "column": "volume",
+        "value": -25
+      }
+    },
+    {
+      "file": "corrupted_reconciliation_error.csv",
+      "rule": "reconciliation",
+      "expected_issue_count": 1,
+      "expected": {
+        "location_id": "LOC-005",
+        "month": "2025-05-01",
+        "difference": 5000.0
+      }
+    }
+  ]
+}

@@ -2,8 +2,6 @@
 
 ReportOps is an agentic reporting and data-quality copilot for recurring spreadsheet workflows. It validates uploaded operational data, calculates KPIs with deterministic Python functions, creates interactive visualizations, and answers questions using analysis tools and cited reporting guidance. The project combines reliable data processing with a small LangGraph workflow and a focused RAG pipeline.
 
-> **Project status:** Day 1 — repository setup and synthetic data generation.
-
 ## Why this project
 
 Recurring business reports often begin with spreadsheets that contain missing fields, duplicated records, invalid values, or inconsistent totals. Finding these problems manually is slow, and asking an LLM to perform calculations directly can produce unreliable results.
@@ -160,8 +158,8 @@ pytest
 
 ## Development plan
 
-- [ ] Day 1: Repository setup and reproducible synthetic data
-- [ ] Day 2: Ingestion, validation models, and validation tests
+- [X] Day 1: Repository setup and reproducible synthetic data
+- [X] Day 2: Ingestion, validation models, and validation tests
 - [ ] Day 3: KPI calculations, charts, and fallback summary
 - [ ] Day 4: Initial Streamlit application and early deployment
 - [ ] Day 5: Structured Gemini summary grounded in calculated facts

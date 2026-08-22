@@ -110,7 +110,7 @@ reportops/
 │   └── reporting.py
 ├── data/demo/
 ├── docs/reporting_handbook/
-├── notebooks/data_exploration.ipynb
+├── notebooks/chart_exploration.ipynb
 ├── scripts/generate_demo_data.py
 ├── tests/
 ├── requirements.txt

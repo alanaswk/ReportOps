@@ -162,7 +162,7 @@ pytest
 - [X] Day 2: Ingestion, validation models, and validation tests
 - [X] Day 3: KPI calculations, charts, and fallback summary
 - [X] Day 4: Initial Streamlit application and early deployment
-- [ ] Day 5: Structured Gemini summary grounded in calculated facts
+- [X] Day 5: Structured Gemini summary grounded in calculated facts
 - [ ] Day 6: LangGraph request routing
 - [ ] Day 7: Reporting handbook and evaluated RAG pipeline
 - [ ] Day 8: Chat integration

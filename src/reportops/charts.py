@@ -1,6 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
-from reportops.metrics import calculate_month_over_month_revenue
+from .metrics import calculate_month_over_month_revenue
 
 def create_actual_vs_budget_chart(df: pd.DataFrame) -> go.Figure:
     """Create a monthly grouped bar chart of actual and budget revenue."""
@@ -60,7 +60,6 @@ def create_monthly_revenue_trend_chart(df: pd.DataFrame) -> go.Figure:
     )
 
     fig.update_layout(
-        barmode="group",
         title="Monthly Revenue Trend",
         xaxis_title="Month",
         yaxis_title="Revenue",

@@ -21,4 +21,3 @@ chromadb
 
 # Testing
 pytest
-

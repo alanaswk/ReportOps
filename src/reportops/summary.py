@@ -1,5 +1,5 @@
 import pandas as pd
-from reportops.metrics import (
+from .metrics import (
     calculate_labor_expense_percentage,
     calculate_month_over_month_revenue,
     calculate_operating_margin,

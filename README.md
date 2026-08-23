@@ -110,7 +110,7 @@ reportops/
 │   └── reporting.py
 ├── data/demo/
 ├── docs/reporting_handbook/
-├── notebooks/chart_exploration.ipynb
+├── notebooks/data_exploration.ipynb
 ├── scripts/generate_demo_data.py
 ├── tests/
 ├── requirements.txt
@@ -160,7 +160,7 @@ pytest
 
 - [X] Day 1: Repository setup and reproducible synthetic data
 - [X] Day 2: Ingestion, validation models, and validation tests
-- [ ] Day 3: KPI calculations, charts, and fallback summary
+- [X] Day 3: KPI calculations, charts, and fallback summary
 - [ ] Day 4: Initial Streamlit application and early deployment
 - [ ] Day 5: Structured Gemini summary grounded in calculated facts
 - [ ] Day 6: LangGraph request routing

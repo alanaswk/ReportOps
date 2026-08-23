@@ -1,5 +1,6 @@
 from pathlib import Path
 import pandas as pd
+from io import BytesIO
 
 NUMERIC_COLUMNS = [
     "revenue",
@@ -26,8 +27,9 @@ def load_data(filepath: str | Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame: The loaded DataFrame.
     """
-    path = Path(filepath)
-    extension = path.suffix.lower()
+    file_name = getattr(filepath, "name", str(filepath))
+    extension = Path(file_name).suffix.lower()
+
     if extension == ".csv":
         df = pd.read_csv(filepath)
     elif extension in [".xls", ".xlsx"]:
@@ -80,3 +82,15 @@ def normalize_data_types(df: pd.DataFrame) -> pd.DataFrame:
         normalized_df["month"] = pd.to_datetime(normalized_df["month"], errors='coerce')
 
     return normalized_df
+
+def test_load_uploaded_csv():
+    uploaded_file = BytesIO(
+        b"location_id,revenue\nL001,100000\n"
+    )
+    uploaded_file.name = "uploaded.csv"
+
+    result = load_data(uploaded_file)
+
+    assert len(result) == 1
+    assert result.loc[0, "location_id"] == "L001"
+    assert result.loc[0, "revenue"] == 100000

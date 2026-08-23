@@ -1,5 +1,5 @@
 import pandas as pd
-from reportops.models import ValidationIssue
+from .models import ValidationIssue
 
 REQUIRED_COLUMNS = {
     "location_id",

@@ -82,15 +82,3 @@ def normalize_data_types(df: pd.DataFrame) -> pd.DataFrame:
         normalized_df["month"] = pd.to_datetime(normalized_df["month"], errors='coerce')
 
     return normalized_df
-
-def test_load_uploaded_csv():
-    uploaded_file = BytesIO(
-        b"location_id,revenue\nL001,100000\n"
-    )
-    uploaded_file.name = "uploaded.csv"
-
-    result = load_data(uploaded_file)
-
-    assert len(result) == 1
-    assert result.loc[0, "location_id"] == "L001"
-    assert result.loc[0, "revenue"] == 100000

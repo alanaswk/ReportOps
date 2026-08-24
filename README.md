@@ -35,9 +35,10 @@ The synthetic dataset represents 15 locations across several regions and 12 mont
 | `budget_revenue` | Budgeted revenue |
 | `labor_expense` | Actual labor expense |
 | `other_expense` | Other operating expense |
+| `total_expense` | Reported total used for expense reconciliation |
 | `volume` | Synthetic operational volume |
 
-The generator will create clean current-period, prior-period, and budget data, plus five corrupted files with known expected errors. A fixed random seed will make every run reproducible.
+The generator creates one clean operations dataset and five corrupted variants with known expected errors. A fixed random seed makes every run reproducible.
 
 ## Validation rules
 
@@ -58,20 +59,22 @@ The generator will create clean current-period, prior-period, and budget data, p
 
 Division-by-zero and missing-input behavior will be handled explicitly and covered by tests.
 
-## Planned architecture
+## Current architecture
 
-The application will keep calculations outside the LLM. Uploaded or demo data will be normalized and validated first; only validated facts and structured errors will be passed to later components.
+Calculations remain outside the LLM. Gemini classifies the request, while deterministic Python functions perform all metric calculations, chart creation, and validation.
 
 ```mermaid
 flowchart TD
-    A["Demo data or upload"] --> B["Ingestion and validation"]
-    B --> C["Deterministic metrics"]
-    C --> D["Charts and summary"]
-    B --> E["LangGraph request router"]
-    C --> E
-    F["Reporting handbook"] --> G["ChromaDB retrieval"]
-    G --> E
-    E --> H["Grounded response"]
+    D["Demo data or upload"] --> P["Ingestion and normalization"]
+    P --> S["ReportState"]
+    U["User request"] --> S
+    S --> C["classify_request"]
+    C -->|analyze| A["analyze_report"]
+    C -->|visualize| V["visualize_report"]
+    C -->|investigate| I["investigate_report"]
+    A --> AM["Calculated metrics"]
+    V --> VC["Plotly chart"]
+    I --> VI["Validation issues"]
 ```
 
 Planned request routes:
@@ -96,21 +99,22 @@ Planned request routes:
 ## Repository structure
 
 ```text
-reportops/
+ReportOps/
 ├── app.py
 ├── src/reportops/
-│   ├── models.py
-│   ├── ingestion.py
-│   ├── validation.py
-│   ├── metrics.py
+│   ├── __init__.py
 │   ├── charts.py
-│   ├── retrieval.py
-│   ├── tools.py
 │   ├── graph.py
-│   └── reporting.py
+│   ├── ingestion.py
+│   ├── metrics.py
+│   ├── model_client.py
+│   ├── models.py
+│   ├── reporting.py
+│   ├── retrieval.py
+│   ├── summary.py
+│   ├── tools.py
+│   └── validation.py
 ├── data/demo/
-├── docs/reporting_handbook/
-├── notebooks/data_exploration.ipynb
 ├── scripts/generate_demo_data.py
 ├── tests/
 ├── requirements.txt
@@ -134,17 +138,17 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-When LLM functionality is added, copy `.env.example` to `.env` and add the required API key locally. Never commit `.env` or any secret value.
+Copy `.env.example` to `.env` and set `GEMINI_API_KEY` to enable Gemini summaries and request classification.
 
 ## Running the project
 
-The Day 1 target command will regenerate all clean and corrupted demo files:
+Regenerate the reproducible demo files with:
 
 ```bash
 python scripts/generate_demo_data.py
 ```
 
-Once the interface is implemented, run it locally with:
+Run the Streamlit application locally with:
 
 ```bash
 streamlit run app.py
@@ -153,7 +157,7 @@ streamlit run app.py
 Run the test suite with:
 
 ```bash
-pytest
+python -m pytest -q
 ```
 
 ## Development plan
@@ -163,7 +167,7 @@ pytest
 - [X] Day 3: KPI calculations, charts, and fallback summary
 - [X] Day 4: Initial Streamlit application and early deployment
 - [X] Day 5: Structured Gemini summary grounded in calculated facts
-- [ ] Day 6: LangGraph request routing
+- [X] Day 6: LangGraph request routing
 - [ ] Day 7: Reporting handbook and evaluated RAG pipeline
 - [ ] Day 8: Chat integration
 - [ ] Day 9: Validation, metric, routing, retrieval, and grounding evaluation
@@ -184,3 +188,5 @@ Results will be added only after the evaluations have been run.
 ## Scope and limitations
 
 The MVP intentionally excludes autonomous data correction, multiple collaborating agents, forecasting, authentication, databases, a separate API backend, and elaborate cloud infrastructure. These may be considered later only if they make the deployed demo clearer, more reliable, or more useful.
+
+

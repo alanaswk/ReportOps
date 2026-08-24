@@ -167,7 +167,7 @@ def validate_reconciliation(
                 severity="error",
                 source=source,
                 explanation=(
-                    f"Expense reconciliatiom differs by ${difference:,.2f} at row {row_index}"
+                    f"Expense reconciliation differs by ${difference:,.2f} at row {row_index}"
                 ),
                 suggested_action=(
                     "Review the component expenses and reported total."

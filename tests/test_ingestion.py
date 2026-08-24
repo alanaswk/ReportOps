@@ -1,5 +1,7 @@
 import pandas as pd
 import pytest
+from io import BytesIO
+
 from reportops.ingestion import load_data,normalize_column_names,normalize_data_types
 
 def test_load_csv():
@@ -54,3 +56,15 @@ def test_normalize_data_types():
     assert pd.api.types.is_datetime64_any_dtype(normalized_df["month"]), "Month column should be datetime"
     assert pd.isna(normalized_df.loc[1, "month"]), "Invalid month value should be converted to NaN"
     assert pd.isna(normalized_df.loc[1, "location_id"]), "Invalid location_id value should be converted to NaN"
+
+def test_load_uploaded_csv():
+    uploaded_file = BytesIO(
+        b"location_id,revenue\nL001,100000\n"
+    )
+    uploaded_file.name = "uploaded.csv"
+
+    result = load_data(uploaded_file)
+
+    assert len(result) == 1
+    assert result.loc[0, "location_id"] == "L001"
+    assert result.loc[0, "revenue"] == 100000

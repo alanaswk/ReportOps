@@ -1,7 +1,7 @@
 from typing import Literal
 from pydantic import BaseModel, Field
 
-RequestType = Literal["analyze", "visualize", "investigate"]
+RequestType = Literal["analyze", "visualize", "investigate", "define"]
 
 ChartType = Literal[
     "actual_vs_budget",
@@ -52,7 +52,8 @@ class RequestClassification(BaseModel):
     request_type: RequestType = Field(
         description=(
             "Use analyze for KPI or performance questions, visualize for chart "
-            "requests, and investigate for validation or data-quality questions."
+            "requests, investigate for validation or data-quality questions, "
+            "and define for reporting definitions, formulas, rules, or guidance."
         )
     )
     chart_type: ChartType | None = Field(

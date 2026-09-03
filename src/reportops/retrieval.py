@@ -4,6 +4,7 @@ from google import genai
 from google.genai import types
 import chromadb
 from dotenv import load_dotenv
+from functools import lru_cache
 
 load_dotenv()
 
@@ -110,6 +111,18 @@ def build_handbook_collection(sections: list[dict]):
         embeddings=embeddings,
         metadatas=metadatas
     )
+
+    return collection
+
+@lru_cache(maxsize=1)
+def get_handbook_collection():
+    """Load the reporting handbook and return its Chroma collection."""
+
+    handbook_path = Path("docs/reporting_handbook/reporting_handbook.md")
+
+    sections = load_handbook_sections(handbook_path)
+
+    collection = build_handbook_collection(sections)
 
     return collection
 

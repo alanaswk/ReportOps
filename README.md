@@ -168,8 +168,8 @@ python -m pytest -q
 - [X] Day 4: Initial Streamlit application and early deployment
 - [X] Day 5: Structured Gemini summary grounded in calculated facts
 - [X] Day 6: LangGraph request routing
-- [ ] Day 7: Reporting handbook and evaluated RAG pipeline
-- [ ] Day 8: Chat integration
+- [X] Day 7: Reporting handbook and evaluated RAG pipeline
+- [X] Day 8: Chat integration
 - [ ] Day 9: Validation, metric, routing, retrieval, and grounding evaluation
 - [ ] Day 10: Documentation, screenshots, demo video, and portfolio polish
 

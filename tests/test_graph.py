@@ -12,6 +12,7 @@ from src.reportops.models import RequestClassification
         "analyze",
         "visualize",
         "investigate",
+        "define",
     ],
 )
 def test_route_request_returns_selected_route(request_type):
@@ -184,6 +185,12 @@ def test_compiled_graph_routes_to_analyze(monkeypatch):
         assert df is sample_df
         return expected_metrics
 
+    def fake_generate_response(state):
+        assert state["calculated_metrics"] == expected_metrics
+        return {
+            "response": "The operating margin is $25,000."
+        }
+    
     monkeypatch.setattr(
         graph_module,
         "classify_request",
@@ -194,6 +201,12 @@ def test_compiled_graph_routes_to_analyze(monkeypatch):
         "get_report_metrics",
         fake_get_report_metrics,
     )
+    monkeypatch.setattr(
+        graph_module,
+        "generate_response",
+        fake_generate_response,
+    )
+    
 
     # Rebuild after monkeypatching so the graph registers the fake classifier.
     test_graph = graph_module.build_report_graph()
@@ -211,3 +224,79 @@ def test_compiled_graph_routes_to_analyze(monkeypatch):
     assert result["tool_used"] == "get_report_metrics"
     assert "chart" not in result
     assert "validation_issues" not in result
+    assert result["response"] == "The operating margin is $25,000."
+
+def test_define_report_uses_retrieval_tool(monkeypatch):
+    expected_rules = [
+        {
+            "section": "Operating Margin",
+            "document": "ReportOps Reporting Handbook",
+            "text": "Operating margin is...",
+            "distance": 0.1,
+        }
+    ]
+
+    fake_collection = object()
+
+    monkeypatch.setattr(
+        graph_module,
+        "get_handbook_collection",
+        lambda: fake_collection,
+    )
+
+    def fake_retrieve_reporting_rules(question, collection):
+        assert question == "How is operating margin calculated?"
+        assert collection is fake_collection
+        return expected_rules
+
+    monkeypatch.setattr(
+        graph_module,
+        "retrieve_reporting_rules",
+        fake_retrieve_reporting_rules,
+    )
+
+    result = graph_module.define_report(
+        {
+            "user_request": "How is operating margin calculated?",
+        }
+    )
+
+    assert result == {
+        "retrieved_rules": expected_rules,
+        "tool_used": "retrieve_reporting_rules",
+    }
+
+def test_generate_response_uses_analyze_facts(monkeypatch):
+    fake_response = SimpleNamespace(
+        text="The operating margin is 25.0%."
+    )
+
+    class FakeModels:
+        def generate_content(self, **kwargs):
+            assert "operating_margin" in kwargs["contents"]
+            assert "What is the operating margin?" in kwargs["contents"]
+            return fake_response
+
+    fake_client = SimpleNamespace(models=FakeModels())
+
+    monkeypatch.setattr(
+        graph_module,
+        "create_gemini_client",
+        lambda: fake_client,
+    )
+
+    result = graph_module.generate_response(
+        {
+            "user_request": "What is the operating margin?",
+            "request_type": "analyze",
+            "calculated_metrics": {
+                "operating_margin": {
+                    "operating_margin_percent": 25.0,
+                }
+            },
+        }
+    )
+
+    assert result == {
+        "response": "The operating margin is 25.0%."
+    }

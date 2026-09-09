@@ -59,42 +59,91 @@ The generator creates one clean operations dataset and five corrupted variants w
 
 Division-by-zero and missing-input behavior will be handled explicitly and covered by tests.
 
-## Current architecture
+## Architecture
 
-Calculations remain outside the LLM. Gemini classifies the request, while deterministic Python functions perform all metric calculations, chart creation, and validation.
+ReportOps separates deterministic data processing from LLM reasoning. Python handles ingestion, validation, KPI calculations, and chart creation. LangGraph classifies natural-language requests and routes them to the appropriate capability. Definition and policy questions use a RAG pipeline backed by Gemini embeddings and ChromaDB, while Gemini generates conversational responses only from retrieved or calculated facts.
 
 ```mermaid
 flowchart TD
-    D["Demo data or upload"] --> P["Ingestion and normalization"]
-    P --> S["ReportState"]
-    U["User request"] --> S
-    S --> C["classify_request"]
+
+    U["User"] --> ST["Streamlit Application"]
+
+    D["Demo CSV/Excel or User Upload"] --> ING["Ingestion & Normalization"]
+    ING --> VAL["Validation"]
+    ING --> KPI["Deterministic KPI Calculations"]
+    ING --> CH["Plotly Charts"]
+
+    VAL --> ST
+    KPI --> ST
+    CH --> ST
+
+    ST --> LR["LangGraph Request Workflow"]
+
+    LR --> AT["Analysis Tools"]
+    LR --> VT["Visualization Tools"]
+    LR --> IT["Validation Tools"]
+    LR --> RT["RAG Retrieval"]
+
+    AT --> PY["Deterministic Python"]
+    VT --> PY
+    IT --> PY
+
+    MD["Reporting Handbook<br/>Markdown"] --> EMB["Gemini Embeddings"]
+    PDF["Reporting Escalation Policy<br/>PDF"] --> EMB
+    EMB --> DB["ChromaDB Knowledge Base"]
+    DB --> RT
+
+    AT --> GR["Grounded Response Generation"]
+    IT --> GR
+    RT --> GR
+
+    GR --> ST
+```
+
+### LangGraph request workflow
+
+The graph stays intentionally small: one classifier chooses the appropriate tool path, and only analysis, investigation, and retrieval routes require conversational response generation.
+
+```mermaid
+flowchart TD
+
+    START["User request"] --> C["classify_request"]
+
     C -->|analyze| A["analyze_report"]
     C -->|visualize| V["visualize_report"]
     C -->|investigate| I["investigate_report"]
-    A --> AM["Calculated metrics"]
-    V --> VC["Plotly chart"]
-    I --> VI["Validation issues"]
+    C -->|define| D["define_report"]
+
+    A --> AM["get_report_metrics"]
+    V --> VC["create_report_chart"]
+    I --> VI["get_validation_explanations"]
+    D --> RR["retrieve_reporting_rules"]
+
+    AM --> G["generate_response"]
+    VI --> G
+    RR --> G
+
+    V --> END["Response / chart"]
+    G --> END
 ```
 
-Planned request routes:
-
-| Route | Example request | Primary capability |
-| --- | --- | --- |
-| Analyze | Why did a location's margin decrease? | Compare calculated metrics |
-| Visualize | Compare labor expense by region. | Create a chart |
-| Investigate | Why was this row flagged? | Explain a validation result |
-| Define | How is operating margin defined? | Retrieve a cited reporting rule |
+| Route       | Example request                                                   | Primary capability                         |
+| ----------- | ----------------------------------------------------------------- | ------------------------------------------ |
+| Analyze     | Why did performance change?                                       | Retrieve deterministic calculated metrics  |
+| Visualize   | Show monthly revenue as a chart.                                  | Create a Plotly visualization              |
+| Investigate | Why was this row flagged?                                         | Explain validation results                 |
+| Define      | What happens if a source file arrives after the reporting cutoff? | Retrieve cited handbook or policy guidance |
 
 ## Technology
 
 - Python and Pandas for ingestion, validation, and KPI calculations
 - Pydantic for structured validation issues and model responses
 - Plotly and Streamlit for the interactive application
-- LangGraph for lightweight request routing
-- Gemini for grounded summaries and conversational responses
-- ChromaDB for reporting-handbook retrieval
-- Pytest for unit and workflow tests
+- LangGraph for lightweight request classification and tool routing
+- Gemini for structured summaries, request classification, grounded responses, and embeddings
+- ChromaDB for multi-document vector retrieval
+- pypdf for PDF text extraction and page metadata
+- Pytest for unit, workflow, and retrieval tests
 
 ## Repository structure
 
@@ -188,5 +237,3 @@ Results will be added only after the evaluations have been run.
 ## Scope and limitations
 
 The MVP intentionally excludes autonomous data correction, multiple collaborating agents, forecasting, authentication, databases, a separate API backend, and elaborate cloud infrastructure. These may be considered later only if they make the deployed demo clearer, more reliable, or more useful.
-
-

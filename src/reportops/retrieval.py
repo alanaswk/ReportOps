@@ -146,13 +146,14 @@ def create_embeddings(
 def build_reporting_collection(
     handbook_sections: list[dict],
     pdf_sections: list[dict],
+    collection_name: str = "reporting_knowledge",
 ):
     """Create a Chroma collection containing the reporting sections."""
 
     client = chromadb.Client()
 
     collection = client.get_or_create_collection(
-        name="reporting_knowledge",
+        name=collection_name,
         embedding_function=None,
     )
 

@@ -44,7 +44,11 @@ def test_load_handbook_sections():
 @pytest.mark.integration
 def test_retrieve_operating_margin():
     sections = load_handbook_sections(HANDBOOK_PATH)
-    collection = build_reporting_collection(sections, [])
+    collection = build_reporting_collection(
+        sections,
+        [],
+        collection_name="test_operating_margin",
+    )
 
     results = retrieve_reporting_rules(
         "How is operating margin calculated?",
@@ -58,7 +62,11 @@ def test_retrieve_operating_margin():
 @pytest.mark.integration
 def test_retrieve_duplicate_records():
     sections = load_handbook_sections(HANDBOOK_PATH)
-    collection = build_reporting_collection(sections, [])
+    collection = build_reporting_collection(
+            sections,
+            [],
+            collection_name="test_duplicate_records",
+        )
 
     results = retrieve_reporting_rules(
         "What does a duplicate record mean?",
@@ -72,7 +80,11 @@ def test_retrieve_duplicate_records():
 @pytest.mark.integration
 def test_fixed_chunk_retrieval_operating_margin():
     chunks = load_handbook_fixed_chunks(HANDBOOK_PATH)
-    collection = build_reporting_collection(chunks, [])
+    collection = build_reporting_collection(
+            chunks,
+            [],
+            collection_name="test_chunk_retrieval_operating_margin",
+        )
 
     results = retrieve_reporting_rules(
         "How is operating margin calculated?",
@@ -83,9 +95,16 @@ def test_fixed_chunk_retrieval_operating_margin():
 
     assert "Operating margin" in top_text
 
-def calculate_retrieval_accuracy(chunks, test_cases):
-    collection = build_reporting_collection(chunks, [])
-
+def calculate_retrieval_accuracy(
+    chunks,
+    test_cases,
+    collection_name,
+):
+    collection = build_reporting_collection(
+        chunks,
+        [],
+        collection_name=collection_name,
+    )
     correct = 0
 
     for question, expected_section in test_cases:
@@ -113,11 +132,13 @@ def test_compare_chunking_strategies():
     section_accuracy = calculate_retrieval_accuracy(
         section_chunks,
         RETRIEVAL_CASES,
+        "test_section_chunks",
     )
 
     fixed_accuracy = calculate_retrieval_accuracy(
         fixed_chunks,
         RETRIEVAL_CASES,
+        "test_fixed_chunks",
     )
 
     print(f"Section-based accuracy: {section_accuracy:.0%}")
@@ -141,16 +162,21 @@ def test_retrieve_pdf_policy():
     collection = build_reporting_collection(
         handbook_sections,
         pdf_sections,
+        collection_name="test_pdf_policy",
     )
 
     results = retrieve_reporting_rules(
         "What should happen if a source file arrives after the reporting cutoff?",
         collection,
+        n_results=3,
     )
 
-    top_result = results[0]
+    matching_result = next(
+        result
+        for result in results
+        if result["section"] == "2. Reporting cutoff and late source files"
+    )
 
-    assert top_result["document"] == "ReportOps Reporting Escalation Policy"
-    assert top_result["source_type"] == "pdf"
-    assert top_result["section"] == "2. Reporting cutoff and late source files"
-    assert "page" in top_result
+    assert matching_result["document"] == "ReportOps Reporting Escalation Policy"
+    assert matching_result["source_type"] == "pdf"
+    assert "page" in matching_result

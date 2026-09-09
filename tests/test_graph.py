@@ -10,7 +10,6 @@ from src.reportops.models import RequestClassification
     "request_type",
     [
         "analyze",
-        "visualize",
         "investigate",
         "define",
     ],
@@ -61,6 +60,7 @@ def test_analyze_report_uses_metrics_tool(monkeypatch):
         "tool_used": "get_report_metrics",
     }
 
+# Tests reserved visualization functionality for possible future use.
 def test_visualize_report_uses_selected_chart_type(monkeypatch):
     sample_df = pd.DataFrame({"revenue": [100_000]})
     expected_chart = object()
@@ -88,6 +88,7 @@ def test_visualize_report_uses_selected_chart_type(monkeypatch):
         "tool_used": "create_report_chart",
     }
 
+# Tests reserved visualization functionality for possible future use.
 def test_visualize_report_requires_chart_type():
     state = {
         "df": pd.DataFrame(),
@@ -139,8 +140,7 @@ def test_investigate_report_uses_validation_tool(monkeypatch):
 
 def test_classify_request_returns_parsed_classification(monkeypatch):
     classification = RequestClassification(
-        request_type="visualize",
-        chart_type="monthly_revenue",
+        request_type="analyze",
     )
 
     fake_response = SimpleNamespace(parsed=classification)
@@ -159,13 +159,12 @@ def test_classify_request_returns_parsed_classification(monkeypatch):
 
     result = graph_module.classify_request(
         {
-            "user_request": "Show me monthly revenue.",
+            "user_request": "What is the operating margin?",
         }
     )
 
     assert result == {
-        "request_type": "visualize",
-        "chart_type": "monthly_revenue",
+        "request_type": "analyze",
     }
 
 
@@ -178,7 +177,6 @@ def test_compiled_graph_routes_to_analyze(monkeypatch):
     def fake_classify_request(state):
         return {
             "request_type": "analyze",
-            "chart_type": None,
         }
 
     def fake_get_report_metrics(df):

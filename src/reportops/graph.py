@@ -42,7 +42,7 @@ class ReportState(TypedDict):
 
 # Node - classify request
 def classify_request(state: ReportState) -> dict[str, Any]:
-    """Classify the user's request and select an optional chart type."""
+    """Classify the user's request into a ReportOps route."""
 
     prompt = f"""
 You are a routing assistant for ReportOps, a financial-report analysis application.
@@ -50,11 +50,7 @@ You are a routing assistant for ReportOps, a financial-report analysis applicati
 Classify the user's request into exactly one route:
 
 - analyze: Use for questions about KPIs, calculated values, trends, or financial
-  performance. Use this route for trend questions unless the user explicitly
-  asks for a chart or visualization.
-
-- visualize: Use when the user explicitly asks to create, display, plot, or show
-  a chart or visualization.
+  performance.
 
 - investigate: Use for questions about validation warnings, errors, missing data,
   duplicate records, reconciliation problems, impossible values, or other
@@ -64,15 +60,6 @@ Classify the user's request into exactly one route:
   validation rules, thresholds, severity levels, chart guidance, reporting
   policies, escalation procedures, correction procedures, or reporting
   process guidance.
-
-If the route is "visualize", select exactly one chart type:
-
-- actual_vs_budget: Compare actual revenue with budgeted revenue.
-- monthly_revenue: Show how revenue changes over time.
-- largest_variances: Show or rank the largest differences between actual and
-  budgeted revenue.
-
-If the route is not "visualize", chart_type must be null.
 
 User request:
 <user_request>
@@ -100,7 +87,6 @@ User request:
 
     return {
         "request_type": classification.request_type,
-        "chart_type": classification.chart_type,
     }
 
 # Node - analyze
@@ -114,6 +100,7 @@ def analyze_report(state: ReportState) -> dict[str, Any]:
         "tool_used": "get_report_metrics"
     }
 
+# Reserved for future natural-language visualization support.
 # Node - visualize
 def visualize_report(state: ReportState) -> dict[str, Any]:
     """Create the chart selected by the classification node."""
@@ -240,7 +227,6 @@ def build_report_graph():
 
     workflow.add_node("classify_request", classify_request)
     workflow.add_node("analyze_report", analyze_report)
-    workflow.add_node("visualize_report", visualize_report)
     workflow.add_node("investigate_report", investigate_report)
     workflow.add_node("define_report", define_report)
     workflow.add_node("generate_response", generate_response)
@@ -251,7 +237,6 @@ def build_report_graph():
         route_request,
         {
             "analyze": "analyze_report",
-            "visualize": "visualize_report",
             "investigate": "investigate_report",
             "define": "define_report"
         }
@@ -261,7 +246,6 @@ def build_report_graph():
     workflow.add_edge("investigate_report", "generate_response")
     workflow.add_edge("define_report", "generate_response")
 
-    workflow.add_edge("visualize_report", END)
     workflow.add_edge("generate_response", END)
 
     return workflow.compile()

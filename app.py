@@ -251,13 +251,6 @@ try:
             display_content = message["content"].replace("$", r"\$")
             st.markdown(display_content)
 
-            if message.get("chart") is not None:
-                st.plotly_chart(
-                    message["chart"],
-                    use_container_width=True,
-                    key=f"history_chart_{index}",
-                )
-
             if message.get("tool_used"):
                 st.caption(f"Tool used: {message['tool_used']}")
 
@@ -271,7 +264,7 @@ try:
                     source_text += f" — Page {message['source_page']}"
 
                 st.caption(source_text)
-                
+
     prompt = st.chat_input("Ask a question about the report")
 
     if prompt:
@@ -295,7 +288,6 @@ try:
         source_document = None
         source_section = None
         source_page = None
-        chat_chart = None
 
         if request_type in {"analyze", "investigate", "define"}:
             assistant_response = result["response"]
@@ -310,20 +302,9 @@ try:
                     source_section = top_result["section"]
                     source_page = top_result.get("page")
 
-        elif request_type == "visualize":
-            assistant_response = "Here is the requested chart."
-            chat_chart = result["chart"]
-
         with st.chat_message("assistant"):
             display_response = assistant_response.replace("$", r"\$")
             st.markdown(display_response)
-
-            if chat_chart is not None:
-                st.plotly_chart(
-                    chat_chart,
-                    use_container_width=True,
-                    key=f"current_chart_{len(st.session_state.messages)}",
-                )
 
             st.caption(f"Tool used: {tool_used}")
 
@@ -342,7 +323,6 @@ try:
             "source_document": source_document,
             "source_section": source_section,
             "source_page": source_page,
-            "chart": chat_chart,
         })
 
 except FileNotFoundError:

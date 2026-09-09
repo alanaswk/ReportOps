@@ -59,80 +59,39 @@ The generator creates one clean operations dataset and five corrupted variants w
 
 Division-by-zero and missing-input behavior will be handled explicitly and covered by tests.
 
-## Architecture
-
-ReportOps separates deterministic data processing from LLM reasoning. Python handles ingestion, validation, KPI calculations, and chart creation. LangGraph classifies natural-language requests and routes them to the appropriate capability. Definition and policy questions use a RAG pipeline backed by Gemini embeddings and ChromaDB, while Gemini generates conversational responses only from retrieved or calculated facts.
-
-```mermaid
-flowchart TD
-
-    U["User"] --> ST["Streamlit Application"]
-
-    D["Demo CSV/Excel or User Upload"] --> ING["Ingestion & Normalization"]
-    ING --> VAL["Validation"]
-    ING --> KPI["Deterministic KPI Calculations"]
-    ING --> CH["Plotly Charts"]
-
-    VAL --> ST
-    KPI --> ST
-    CH --> ST
-
-    ST --> LR["LangGraph Request Workflow"]
-
-    LR --> AT["Analysis Tools"]
-    LR --> VT["Visualization Tools"]
-    LR --> IT["Validation Tools"]
-    LR --> RT["RAG Retrieval"]
-
-    AT --> PY["Deterministic Python"]
-    VT --> PY
-    IT --> PY
-
-    MD["Reporting Handbook<br/>Markdown"] --> EMB["Gemini Embeddings"]
-    PDF["Reporting Escalation Policy<br/>PDF"] --> EMB
-    EMB --> DB["ChromaDB Knowledge Base"]
-    DB --> RT
-
-    AT --> GR["Grounded Response Generation"]
-    IT --> GR
-    RT --> GR
-
-    GR --> ST
-```
-
 ### LangGraph request workflow
 
 The graph stays intentionally small: one classifier chooses the appropriate tool path, and only analysis, investigation, and retrieval routes require conversational response generation.
 
-```mermaid
-flowchart TD
-
-    START["User request"] --> C["classify_request"]
-
-    C -->|analyze| A["analyze_report"]
-    C -->|visualize| V["visualize_report"]
-    C -->|investigate| I["investigate_report"]
-    C -->|define| D["define_report"]
-
-    A --> AM["get_report_metrics"]
-    V --> VC["create_report_chart"]
-    I --> VI["get_validation_explanations"]
-    D --> RR["retrieve_reporting_rules"]
-
-    AM --> G["generate_response"]
-    VI --> G
-    RR --> G
-
-    V --> END["Response / chart"]
-    G --> END
+```text
+User request
+    |
+    v
+Classify request
+    |
+    +----------------+----------------+
+    |                |                |
+    v                v                v
+Analyze          Investigate        Define
+    |                |                |
+    v                v                v
+Calculated       Validation      Reporting guidance
+metrics           results          from RAG
+    |                |                |
+    +----------------+----------------+
+                     |
+                     v
+          Generate grounded response
+                     |
+                     v
+            Return to Streamlit
 ```
 
-| Route       | Example request                                                   | Primary capability                         |
-| ----------- | ----------------------------------------------------------------- | ------------------------------------------ |
-| Analyze     | Why did performance change?                                       | Retrieve deterministic calculated metrics  |
-| Visualize   | Show monthly revenue as a chart.                                  | Create a Plotly visualization              |
-| Investigate | Why was this row flagged?                                         | Explain validation results                 |
-| Define      | What happens if a source file arrives after the reporting cutoff? | Retrieve cited handbook or policy guidance |
+| Route | Example request | Primary capability |
+| --- | --- | --- |
+| Analyze | What is the operating margin? | Use deterministic calculated metrics |
+| Investigate | Why was this row flagged? | Explain validation results |
+| Define | What happens if a source file arrives after the reporting cutoff? | Retrieve cited handbook or policy guidance |
 
 ## Technology
 

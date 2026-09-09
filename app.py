@@ -261,12 +261,17 @@ try:
             if message.get("tool_used"):
                 st.caption(f"Tool used: {message['tool_used']}")
 
-            if message.get("source_section"):
-                st.caption(
-                    "Source: ReportOps Reporting Handbook — "
+            if message.get("source_document") and message.get("source_section"):
+                source_text = (
+                    f"Source: {message['source_document']} — "
                     f"{message['source_section']}"
                 )
 
+                if message.get("source_page") is not None:
+                    source_text += f" — Page {message['source_page']}"
+
+                st.caption(source_text)
+                
     prompt = st.chat_input("Ask a question about the report")
 
     if prompt:
@@ -287,7 +292,9 @@ try:
         request_type = result["request_type"]
         tool_used = result["tool_used"]
 
+        source_document = None
         source_section = None
+        source_page = None
         chat_chart = None
 
         if request_type in {"analyze", "investigate", "define"}:
@@ -297,12 +304,11 @@ try:
                 retrieved_rules = result["retrieved_rules"]
 
                 if retrieved_rules:
-                    source_section = ", ".join(
-                        dict.fromkeys(
-                            rule["section"]
-                            for rule in retrieved_rules
-                        )
-                    )
+                    top_result = retrieved_rules[0]
+
+                    source_document = top_result["document"]
+                    source_section = top_result["section"]
+                    source_page = top_result.get("page")
 
         elif request_type == "visualize":
             assistant_response = "Here is the requested chart."
@@ -321,16 +327,21 @@ try:
 
             st.caption(f"Tool used: {tool_used}")
 
-            if source_section:
-                st.caption(
-                    f"Source: ReportOps Reporting Handbook — {source_section}"
-                )
+            if source_document and source_section:
+                source_text = f"Source: {source_document} — {source_section}"
+
+                if source_page is not None:
+                    source_text += f" — Page {source_page}"
+
+                st.caption(source_text)
 
         st.session_state.messages.append({
             "role": "assistant",
             "content": assistant_response,
             "tool_used": tool_used,
+            "source_document": source_document,
             "source_section": source_section,
+            "source_page": source_page,
             "chart": chat_chart,
         })
 

@@ -240,7 +240,7 @@ def test_define_report_uses_retrieval_tool(monkeypatch):
 
     monkeypatch.setattr(
         graph_module,
-        "get_handbook_collection",
+        "get_reporting_collection",
         lambda: fake_collection,
     )
 

@@ -17,7 +17,7 @@ from .tools import (
     get_validation_explanations,
 )
 from .retrieval import (
-    get_handbook_collection,
+    get_reporting_collection,
     retrieve_reporting_rules,
 )
 
@@ -61,8 +61,9 @@ Classify the user's request into exactly one route:
   data-quality issues.
 
 - define: Use for questions about reporting definitions, KPI formulas,
-  validation rules, thresholds, severity levels, or guidance about which
-  chart to use.
+  validation rules, thresholds, severity levels, chart guidance, reporting
+  policies, escalation procedures, correction procedures, or reporting
+  process guidance.
 
 If the route is "visualize", select exactly one chart type:
 
@@ -144,7 +145,7 @@ def investigate_report(state: ReportState) -> dict[str, Any]:
 def define_report(state: ReportState) -> dict[str, Any]:
     """Retrieve reporting guidance for a definition or rules question."""
 
-    collection = get_handbook_collection()
+    collection = get_reporting_collection()
 
     retrieved = retrieve_reporting_rules(
         state["user_request"],
@@ -153,7 +154,7 @@ def define_report(state: ReportState) -> dict[str, Any]:
 
     return {
         "retrieved_rules": retrieved,
-        "tool_used": "retrieve_reporting_rules",
+        "tool_used": "retrieve_reporting_rules"
     }
 
 # Node - generate response

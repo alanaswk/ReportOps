@@ -154,7 +154,13 @@ def generate_response(state: ReportState) -> dict[str, Any]:
         facts = state["calculated_metrics"]
 
     elif request_type == "investigate":
-        facts = state["validation_issues"]
+        validation_issues = state["validation_issues"]
+
+        facts = {
+            "validation_completed": True,
+            "issue_count": len(validation_issues),
+            "validation_issues": validation_issues,
+        }
 
     elif request_type == "define":
         facts = state["retrieved_rules"]
@@ -177,6 +183,11 @@ Rules:
 - Keep the response concise and conversational.
 - Format currency with a dollar sign and commas when appropriate.
 - Format percentages clearly.
+- For investigate requests, validation_completed=True means validation was successfully performed.
+- For investigate requests, issue_count=0 means no validation issues were found.
+- For investigate requests, validation_completed=True means validation was successfully performed.
+- When issue_count=0, state clearly that validation completed and no validation issues were found.
+- When issue_count is greater than 0, answer using the supplied validation issues.
 - If the supplied facts are insufficient to answer the question, say that the available information is insufficient.
 
 User request:

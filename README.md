@@ -18,31 +18,48 @@ ReportOps separates those responsibilities: deterministic Python functions handl
 
 ReportOps:
 
-* Loads included demo data or user-uploaded CSV and Excel files.
-* Detects five classes of data-quality issues.
-* Calculates four operational KPIs using deterministic Python functions.
-* Displays three interactive Plotly charts.
-* Generates a structured executive summary from validated facts.
-* Routes natural-language questions to analysis, validation, or retrieval tools through LangGraph.
-* Retrieves KPI definitions, reporting rules, and escalation guidance from Markdown and PDF knowledge sources with citations.
-* Runs as a publicly deployed Streamlit application.
-* Includes automated evaluation for validation accuracy, KPI correctness, request routing, retrieval quality, and response grounding.
+* Calculates four operational KPIs.
+* Generates a structured executive summary from validated results.
+* Routes natural-language questions through LangGraph.
+* Retrieves reporting guidance from Markdown and PDF sources with citations.
 
-## Application workflow
+## Architecture
 
-The Streamlit application is organized into three primary sections:
+ReportOps separates deterministic data processing from LLM-based reasoning. The Streamlit application is organized into three main areas:
 
-### Data Quality
+* **Data Quality:** validates the selected dataset and explains detected issues.
+* **Report:** displays calculated KPIs, the executive summary, supporting evidence, charts, and downloads.
+* **Ask ReportOps:** routes natural-language questions through LangGraph to analysis, validation, or RAG tools.
 
-Reviews the selected dataset for predefined validation issues and displays the underlying data for inspection.
+```text
+                    ┌───────────────────────┐
+                    │   Streamlit Interface │
+                    └───────────┬───────────┘
+                                │
+             ┌──────────────────┼──────────────────┐
+             │                  │                  │
+             v                  v                  v
+      Data Quality           Report          Ask ReportOps
+             │                  │                  │
+             v                  v                  v
+       Validation          Metrics +         LangGraph
+          Tools              Charts          Classifier
+                                                   │
+                                         ┌─────────┼─────────┐
+                                         │         │         │
+                                         v         v         v
+                                      Analyze  Investigate  Define
+                                         │         │         │
+                                         │         │         v
+                                         │         │        RAG
+                                         └─────────┴─────────┘
+                                                   │
+                                                   v
+                                        Grounded response
+```
 
-### Report
+Python functions perform validation and KPI calculations before results reach the LLM. The LLM is used for request classification, summarization, interpretation, and grounded response generation.
 
-Displays deterministic KPI calculations, a grounded executive summary, supporting findings and evidence, interactive Plotly charts, and downloadable results.
-
-### Ask ReportOps
-
-Allows users to ask natural-language questions about calculated performance, validation issues, KPI definitions, and reporting guidance. LangGraph classifies each request and routes it to the appropriate tool before generating a grounded response.
 
 ## Demo dataset
 
@@ -82,43 +99,18 @@ Validation issues are represented with structured Pydantic models containing the
 | Operating margin                | `(revenue - labor_expense - other_expense) / revenue`              |
 | Labor expense percentage        | `labor_expense / revenue`                                          |
 
-## LangGraph request workflow
+## LangGraph request routing
 
-The LangGraph workflow stays intentionally small. ReportOps uses tool routing rather than multiple autonomous agents.
+LangGraph classifies questions from **Ask ReportOps** and routes them to the appropriate capability.
 
-A classifier first identifies the user's request type and routes the request to one of three paths.
+| Route       | Example request                                                   | Primary capability                   |
+| ----------- | ----------------------------------------------------------------- | ------------------------------------ |
+| Analyze     | How is revenue performing against budget?                         | Use deterministic calculated metrics |
+| Investigate | Why was this row flagged?                                         | Explain validation results           |
+| Define      | What happens if a source file arrives after the reporting cutoff? | Retrieve cited reporting guidance    |
 
-```text
-User request
-    |
-    v
-Classify request
-    |
-    +----------------+----------------+
-    |                |                |
-    v                v                v
-Analyze          Investigate        Define
-    |                |                |
-    v                v                v
-Calculated       Validation      Reporting guidance
-metrics           results          from RAG
-    |                |                |
-    +----------------+----------------+
-                     |
-                     v
-          Generate grounded response
-                     |
-                     v
-            Return to Streamlit
-```
+The workflow is intentionally lightweight: LangGraph selects the appropriate tool path rather than coordinating multiple autonomous agents.
 
-| Route       | Example request                                                   | Primary capability                         |
-| ----------- | ----------------------------------------------------------------- | ------------------------------------------ |
-| Analyze     | How is revenue performing against budget?                         | Use deterministic calculated metrics       |
-| Investigate | Why was this row flagged?                                         | Explain structured validation results      |
-| Define      | What happens if a source file arrives after the reporting cutoff? | Retrieve cited handbook or policy guidance |
-
-The LLM does not perform KPI arithmetic. Calculations are completed before response generation and passed to the model as trusted facts.
 
 ## RAG pipeline
 
@@ -285,40 +277,6 @@ The evaluation set is intentionally small and targeted to the supported MVP work
 | Grounding review        | 3/3 sampled responses supported by tool output    |
 
 These results are produced from reproducible test cases included in the repository rather than estimated performance claims.
-
-## Architecture
-
-```text
-                    ┌───────────────────────┐
-                    │   Streamlit Interface │
-                    └───────────┬───────────┘
-                                │
-             ┌──────────────────┼──────────────────┐
-             │                  │                  │
-             v                  v                  v
-      Data Quality           Report          Ask ReportOps
-             │                  │                  │
-             v                  v                  v
-       Validation          Metrics +         LangGraph
-          Tools              Charts          Classifier
-             │                  │                  │
-             │                  │        ┌─────────┼─────────┐
-             │                  │        │         │         │
-             │                  │        v         v         v
-             │                  │     Analyze  Investigate  Define
-             │                  │        │         │         │
-             │                  │        │         │         v
-             │                  │        │         │       RAG
-             │                  │        │         │         │
-             │                  │        └─────────┴─────────┘
-             │                  │                  │
-             └──────────────────┴──────────────────┘
-                                │
-                                v
-                     Grounded LLM Response
-```
-
-The system separates deterministic processing from generative reasoning. Validation and KPI calculations are performed by Python functions, while the LLM is used for classification, interpretation, summarization, and grounded response generation.
 
 ## Scope and limitations
 

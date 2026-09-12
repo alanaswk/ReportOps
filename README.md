@@ -6,26 +6,27 @@ ReportOps is an agentic reporting and data-quality copilot for recurring spreads
 
 ReportOps is deployed publicly with Streamlit Community Cloud.
 
-**Live application:** [Open ReportOps](https://reportops-alanaswk.streamlit.app/)
+**Live application:** <https://reportops-alanaswk.streamlit.app/>
 
 ## Why this project
 
 Recurring business reports often begin with spreadsheets that contain missing fields, duplicated records, invalid values, or inconsistent totals. Finding these problems manually is slow, and asking an LLM to perform calculations directly can produce unreliable results.
 
-ReportOps separates those responsibilities: deterministic Python functions handle validation and arithmetic, while the LLM interprets verified results, classifies natural-language requests, and generates grounded explanations from calculated results or retrieved reporting guidance.
+ReportOps separates those responsibilities: deterministic Python functions handle validation and arithmetic, while Gemini is used for request classification, structured summaries, and grounded responses based on calculated results or retrieved reporting guidance.
 
 ## Core capabilities
 
 ReportOps:
 
-* Calculates four operational KPIs.
+* Validates CSV and Excel inputs for five classes of data-quality issues.
+* Calculates four operational KPIs and generates interactive visualizations.
 * Generates a structured executive summary from validated results.
 * Routes natural-language questions through LangGraph.
-* Retrieves reporting guidance from Markdown and PDF sources with citations.
+* Retrieves cited reporting guidance from Markdown and PDF sources through RAG.
 
 ## Architecture
 
-ReportOps separates deterministic data processing from LLM-based reasoning. The Streamlit application is organized into three main areas:
+ReportOps separates deterministic data processing from LLM-based reasoning. The application is organized into three main areas:
 
 * **Data Quality:** validates the selected dataset and explains detected issues.
 * **Report:** displays calculated KPIs, the executive summary, supporting evidence, charts, and downloads.
@@ -58,8 +59,7 @@ ReportOps separates deterministic data processing from LLM-based reasoning. The 
                                         Grounded response
 ```
 
-Python functions perform validation and KPI calculations before results reach the LLM. The LLM is used for request classification, summarization, interpretation, and grounded response generation.
-
+Python functions perform validation and KPI calculations before results reach the model. Gemini is used for request classification, executive summary generation, grounded responses, and RAG embeddings.
 
 ## Demo dataset
 
@@ -88,8 +88,6 @@ The generator creates one clean operations dataset and five corrupted variants w
 4. **Impossible values:** detect values such as negative volume or invalid dates.
 5. **Reconciliation:** when a total-expense field is supplied, detect rows where its components do not add to the reported total.
 
-Validation issues are represented with structured Pydantic models containing the issue type, severity, source, explanation, and suggested action.
-
 ## KPI definitions
 
 | KPI                             | Calculation                                                        |
@@ -109,12 +107,9 @@ LangGraph classifies questions from **Ask ReportOps** and routes them to the app
 | Investigate | Why was this row flagged?                                         | Explain validation results           |
 | Define      | What happens if a source file arrives after the reporting cutoff? | Retrieve cited reporting guidance    |
 
-The workflow is intentionally lightweight: LangGraph selects the appropriate tool path rather than coordinating multiple autonomous agents.
-
-
 ## RAG pipeline
 
-ReportOps uses retrieval-augmented generation for reporting definitions, rules, and escalation guidance. Numeric spreadsheet rows are not embedded or retrieved through RAG.
+ReportOps uses retrieval-augmented generation for reporting definitions, rules, and escalation guidance.
 
 The knowledge base currently contains two document types:
 
@@ -146,21 +141,11 @@ Section-based chunking produced substantially better Top-1 retrieval accuracy th
 
 Both approaches achieved 100% Top-3 recall on the tested questions, suggesting that fixed-size chunking often retrieved the relevant information but ranked it less effectively.
 
-Based on these results, ReportOps uses structure-aware section chunking for its production retrieval pipeline.
+Based on these results, ReportOps uses structure-aware section chunking in its retrieval pipeline.
 
 ## Structured executive summary
 
-ReportOps can generate an executive summary using Gemini, but the model receives only validated inputs and already-calculated metrics.
-
-Structured output includes:
-
-* Major findings
-* Concerns
-* Executive summary
-
-Each supported claim includes evidence tied to provided metrics or validation results.
-
-If the LLM is unavailable or the request fails, ReportOps falls back to a deterministic template-based summary so the core reporting workflow remains usable.
+Gemini generates an executive summary from validated inputs and already-calculated metrics. Claims are tied to supporting evidence, and a deterministic fallback summary keeps the reporting workflow available if the model request fails.
 
 ## Technology
 
@@ -239,8 +224,6 @@ Copy `.env.example` to `.env` and set:
 GEMINI_API_KEY=your_api_key_here
 ```
 
-The Gemini API key enables structured summaries, request classification, grounded chat responses, and embeddings.
-
 ## Running the project
 
 Regenerate the reproducible demo files with:
@@ -276,10 +259,6 @@ The evaluation set is intentionally small and targeted to the supported MVP work
 | Request routing         | 20/20 representative prompts correctly classified |
 | Grounding review        | 3/3 sampled responses supported by tool output    |
 
-These results are produced from reproducible test cases included in the repository rather than estimated performance claims.
-
 ## Scope and limitations
 
-ReportOps is a focused portfolio project, not a production enterprise platform.
-
-Future improvements could include broader document support, more flexible uploaded-data schemas, and additional reporting metrics.
+Future improvements could include comparing multiple LLM providers, supporting dynamic or frequently updated RAG sources, adding multi-turn conversational context, handling more flexible uploaded-data schemas, and expanding reporting metrics.

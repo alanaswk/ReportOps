@@ -8,6 +8,8 @@ ReportOps is deployed publicly with Streamlit Community Cloud.
 
 **Live application:** <https://reportops-alanaswk.streamlit.app/>
 
+![ReportOps report dashboard](docs/images/reportops-report.png)
+
 ## Why this project
 
 Recurring business reports often begin with spreadsheets that contain missing fields, duplicated records, invalid values, or inconsistent totals. Finding these problems manually is slow, and asking an LLM to perform calculations directly can produce unreliable results.
@@ -60,6 +62,8 @@ ReportOps separates deterministic data processing from LLM-based reasoning. The 
 ```
 
 Python functions perform validation and KPI calculations before results reach the model. Gemini is used for request classification, executive summary generation, grounded responses, and RAG embeddings.
+
+![Ask ReportOps grounded response](docs/images/reportops-chat.png)
 
 ## Demo dataset
 

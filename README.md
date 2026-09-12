@@ -61,7 +61,7 @@ ReportOps separates deterministic data processing from LLM-based reasoning. The 
                                         Grounded response
 ```
 
-Python functions perform validation and KPI calculations before results reach the model. Gemini is used for request classification, executive summary generation, grounded responses, and RAG embeddings.
+Python functions perform validation and KPI calculations deterministically. Gemini is used for request classification, executive summary generation, grounded responses, and RAG embeddings.
 
 ![Ask ReportOps grounded response](docs/images/reportops-chat.png)
 
@@ -147,6 +147,21 @@ Both approaches achieved 100% Top-3 recall on the tested questions, suggesting t
 
 Based on these results, ReportOps uses structure-aware section chunking in its retrieval pipeline.
 
+## Evaluation results
+
+ReportOps was evaluated on validation accuracy, deterministic KPI calculations, request routing, retrieval quality, and response grounding.
+
+The evaluation set is intentionally small and targeted to the supported MVP workflows.
+
+| Evaluation              | Result                                            |
+| ----------------------- | ------------------------------------------------- |
+| Single-error validation | 5/5 corrupted files correctly identified          |
+| Clean-file validation   | 0 validation issues detected                      |
+| Multi-error validation  | 4/4 seeded issue types detected together          |
+| KPI correctness         | 4/4 manually verified calculations matched        |
+| Request routing         | 20/20 representative prompts correctly classified |
+| Grounding review        | 3/3 sampled responses supported by tool output    |
+
 ## Structured executive summary
 
 Gemini generates an executive summary from validated inputs and already-calculated metrics. Claims are tied to supporting evidence, and a deterministic fallback summary keeps the reporting workflow available if the model request fails.
@@ -186,6 +201,9 @@ ReportOps/
 ├── data/
 │   └── demo/
 ├── docs/
+│   ├── images/
+│   │   ├── reportops-chat.png
+│   │   └── reportops-report.png
 │   └── reporting_handbook/
 │       ├── reporting_handbook.md
 │       └── reporting_escalation_policy.pdf
@@ -247,21 +265,6 @@ Run the full test suite with:
 ```bash
 python -m pytest -q
 ```
-
-## Evaluation results
-
-ReportOps was evaluated on validation accuracy, deterministic KPI calculations, request routing, retrieval quality, and response grounding.
-
-The evaluation set is intentionally small and targeted to the supported MVP workflows.
-
-| Evaluation              | Result                                            |
-| ----------------------- | ------------------------------------------------- |
-| Single-error validation | 5/5 corrupted files correctly identified          |
-| Clean-file validation   | 0 validation issues detected                      |
-| Multi-error validation  | 4/4 seeded issue types detected together          |
-| KPI correctness         | 4/4 manually verified calculations matched        |
-| Request routing         | 20/20 representative prompts correctly classified |
-| Grounding review        | 3/3 sampled responses supported by tool output    |
 
 ## Scope and limitations
 

@@ -181,17 +181,30 @@ python -m pytest -q
 - [ ] Day 9: Validation, metric, routing, retrieval, and grounding evaluation
 - [ ] Day 10: Documentation, screenshots, demo video, and portfolio polish
 
-## Evaluation plan
+## Evaluation results
 
-The finished project will publish measured results for:
+ReportOps was evaluated on validation accuracy, deterministic KPI calculations, request routing, retrieval quality, and response grounding. The evaluation set is intentionally small and targeted to the supported MVP workflows.
 
-- Validation detection: expected errors, detected errors, misses, and false positives
-- KPI correctness: calculated values compared with manually verified values
-- Routing accuracy: intended versus selected route for representative prompts
-- Retrieval accuracy: whether the correct handbook section appears in the retrieved results
-- Grounding: whether each narrative claim is supported by a calculated result or retrieved rule
+| Evaluation | Result |
+| --- | --- |
+| Single-error validation | 5/5 corrupted files correctly identified |
+| Clean-file validation | 0 validation issues detected |
+| Multi-error validation | 4/4 seeded issue types detected together |
+| KPI correctness | 4/4 manually verified calculations matched |
+| Request routing | 20/20 representative prompts correctly classified |
+| Markdown section-based retrieval | 10/10 Top-1, 10/10 Top-3 |
+| Markdown fixed-size retrieval | 5/10 Top-1, 10/10 Top-3 |
+| PDF section-based retrieval | 5/6 Top-1, 6/6 Top-3 |
+| PDF fixed-size retrieval | 1/6 Top-1, 6/6 Top-3 |
+| Grounding review | 3/3 sampled responses supported by tool output |
 
-Results will be added only after the evaluations have been run.
+### Retrieval experiment
+
+Two chunking strategies were compared across both the Markdown reporting handbook and the PDF reporting policy.
+
+Section-based chunking produced substantially better Top-1 retrieval accuracy than fixed-size character chunking. On the Markdown evaluation set, section-based chunks achieved 100% Top-1 accuracy compared with 50% for fixed-size chunks. On the PDF evaluation set, section-based chunks achieved 83.3% Top-1 accuracy compared with 16.7% for fixed-size chunks.
+
+Both strategies achieved 100% Top-3 recall on the tested questions, suggesting that fixed-size chunking often retrieved the relevant information but ranked it less effectively. Based on these results, ReportOps uses structure-aware section chunking for its production retrieval pipeline.
 
 ## Scope and limitations
 
